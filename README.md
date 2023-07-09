@@ -1,1 +1,1 @@
-# GPTVoiceAssistant
+AI voice assistant made using ChatGPT
