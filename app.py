@@ -54,7 +54,7 @@ class VoiceAssistantApp:
         self.flash_interval = 1000 # Flashing interval in milliseconds
 
         # Set up OpenAI API credentials
-        self.api_key = "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" # Replace with your OpenAI API key
+        self.api_key = "key" # Replace with your OpenAI API key
         self.chat_model = "gpt-3.5-turbo"
 
         self.tts_engine = pyttsx3.init()
