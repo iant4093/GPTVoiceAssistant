@@ -6,40 +6,48 @@ import atexit
 import os
 import openai
 
-class VoiceRecorderApp:
+# Define the VoiceAssistantApp class
+class VoiceAssistantApp:
     def __init__(self):
+        # Create a window using Tkinter
         self.window = tk.Tk()
         self.window.title("Voice Recorder")
         self.window.geometry("800x600")  # Set the initial size of the window
         
+        # Create a record button
         self.record_button = tk.Button(self.window, text="Record", command=self.toggle_recording, height=3, width=20)
         self.record_button.pack(pady=10)
         
+        # Create a text box for displaying transcriptions
         self.transcription_text = tk.Text(self.window, height=10, width=60, wrap=tk.WORD)  # Enable word wrapping
         self.transcription_text.pack(pady=10)
         
         self.transcription_text.configure(state="disabled")  # Make the text box read-only
         
+        # Create a send button
         self.send_button = tk.Button(self.window, text="Send", command=self.send_message)
         self.send_button.pack(pady=10)
         
+        # Create a text box for displaying responses
         self.response_text = tk.Text(self.window, height=10, width=60, wrap=tk.WORD)  # Enable word wrapping
         self.response_text.pack(pady=10)
         
         self.response_text.configure(state="disabled")  # Make the text box read-only
         
+        # Initialize variables
         self.is_recording = False
         self.filename = "recording.wav"
         self.data = []
         self.flash_interval = 1000  # Flashing interval in milliseconds
         
-        self.api_key = "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"  # Replace with your OpenAI API key
+        # Set up OpenAI API credentials
+        self.api_key = "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"  # Replace with your OpenAI API key
         self.chat_model = "gpt-3.5-turbo"
         
-        atexit.register(self.cleanup)
- 
+        atexit.register(self.cleanup)  # Register cleanup function
         
     def toggle_recording(self):
+        # Toggle the recording state when the record button is clicked
         if not self.is_recording:
             self.record_button.configure(text="Stop Recording")
             self.start_recording()
@@ -50,12 +58,14 @@ class VoiceRecorderApp:
             self.record_button.configure(bg="SystemButtonFace")  # Restore the button's original background color
         
     def start_recording(self):
+        # Start recording audio
         self.is_recording = True
         self.data = []
         self.stream = sd.InputStream(callback=self.record_callback)
         self.stream.start()
         
     def stop_recording(self):
+        # Stop recording audio, save it to a file, perform speech recognition, and display the transcription
         self.is_recording = False
         self.stream.stop()
         sf.write(self.filename, self.data, samplerate=44100)
@@ -65,11 +75,13 @@ class VoiceRecorderApp:
         self.display_transcription(transcription)
         
     def record_callback(self, indata, frames, time, status):
+        # Callback function for recording audio
         if status:
             print(status)
         self.data.extend(indata[:, 0])
         
     def perform_speech_recognition(self):
+        # Perform speech recognition on the recorded audio file
         r = sr.Recognizer()
         with sr.AudioFile(self.filename) as source:
             audio_data = r.record(source)
@@ -77,12 +89,14 @@ class VoiceRecorderApp:
         return transcription
         
     def display_transcription(self, transcription):
+        # Display the transcription in the transcription text box
         self.transcription_text.configure(state="normal")  # Enable the text box temporarily
         self.transcription_text.delete(1.0, tk.END)
         self.transcription_text.insert(tk.END, transcription)
         self.transcription_text.configure(state="disabled")  # Disable the text box again
         
     def send_message(self):
+        # Send the user input to the chatbot and display the response
         user_input = self.transcription_text.get(1.0, tk.END).strip()
         
         if user_input:
@@ -90,6 +104,7 @@ class VoiceRecorderApp:
             self.display_response(response)
         
     def get_chatbot_response(self, user_input):
+        # Get a response from the OpenAI chatbot model
         openai.api_key = self.api_key
         response = openai.ChatCompletion.create(
             model=self.chat_model,
@@ -105,17 +120,20 @@ class VoiceRecorderApp:
 
         
     def display_response(self, response):
+        # Display the response in the response text box
         self.response_text.configure(state="normal")  # Enable the text box temporarily
         self.response_text.delete(1.0, tk.END)
         self.response_text.insert(tk.END, response)
         self.response_text.configure(state="disabled")  # Disable the text box again
         
     def cleanup(self):
+        # Clean up by deleting the audio file
         if os.path.exists(self.filename):
             os.remove(self.filename)
             print("Deleted audio file: {}".format(self.filename))
         
     def flash_button(self):
+        # Flash the record button while recording is in progress
         if self.is_recording:
             current_bg = self.record_button.cget("bg")
             new_bg = "red" if current_bg != "red" else "SystemButtonFace"
@@ -123,8 +141,10 @@ class VoiceRecorderApp:
             self.window.after(self.flash_interval, self.flash_button)
         
     def run(self):
+        # Run the Tkinter event loop
         self.window.mainloop()
 
+# Create an instance of the VoiceAssistantApp class and run it
 if __name__ == "__main__":
-    app = VoiceRecorderApp()
+    app = VoiceAssistantApp()
     app.run()
